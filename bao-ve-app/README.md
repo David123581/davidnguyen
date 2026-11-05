@@ -2,10 +2,10 @@
 
 Web app cho tổ trưởng bảo vệ ngân hàng. Không cần cài thư viện (chỉ Node.js ≥ 22.5, dữ liệu lưu SQLite).
 
-| Chức năng | Địa chỉ |
+| Đối tượng | Địa chỉ |
 |---|---|
-| Quản lý (gọi số, kiểm tra, lịch trực, đánh giá, danh bạ, cài đặt) | `/` (cần PIN) |
-| Khách lấy số bằng điện thoại | `/lay-so?k=<mã QR>` (quét QR ở trang Gọi số) |
+| **Khách hàng** lấy số trên điện thoại (dán QR ở cửa) | `/lay-so` (hoặc gốc `/`) |
+| **Nội bộ bảo vệ**: gọi số, kiểm tra, lịch trực, đánh giá, danh bạ, cài đặt (cần PIN) | `/bao-ve` |
 | Màn hình tivi + giọng đọc | `/tv` |
 | In phiếu đánh giá | `/in-danh-gia?month=YYYY-MM&prefill=1` (mở từ tab Đánh giá tháng) |
 
@@ -33,14 +33,16 @@ Không đặt `ADMIN_PIN` thì app tự sinh PIN ngẫu nhiên và in ra console
 ## Dùng hằng ngày
 
 - **Tivi:** mở `/tv` bằng Edge/Chrome, bấm "Bật âm thanh" một lần (trình duyệt bắt buộc), tivi sẽ tự vào toàn màn hình. Cần máy có giọng đọc tiếng Việt (Edge/Chrome trên Windows, Chrome trên Android có sẵn).
-- **QR:** tab *Gọi số* → *In mã QR*, dán ở cửa. Khách quét là nhận số, không cần cài app. *Đổi mã QR* nếu bị lạm dụng.
+- **Khách:** quét QR → nhập tên (không bắt buộc) → nhận số. Tivi đọc: "Mời khách hàng *Nguyễn Văn An*, số 1, đến quầy 2".
+- **Gọi số:** trong `/bao-ve`, bấm *GỌI SỐ TIẾP → QUẦY n* của quầy đang rảnh. Khách trước đó ở quầy này tự biến khỏi màn hình; *Gọi lại / Vắng / Xong* có sẵn trên từng quầy.
+- **Chống lấy số từ xa:** Cài đặt → bật "Chỉ cho lấy số khi quét mã QR dán tại quầy"; khi đó QR có thêm mã bí mật và có nút *Đổi mã QR*.
 - **Khách không có điện thoại:** bấm *Cấp số cho khách không có điện thoại*.
-- **Số reset mỗi ngày** theo giờ Việt Nam.
+- **Số thứ tự** tăng dần 001, 002, … trong ngày và tự bắt đầu lại từ 001 vào ngày mới (giờ Việt Nam).
 
 ## Bảo mật
 
 - Quản lý bằng một mã PIN (băm scrypt), khoá 10 phút sau 5 lần nhập sai, cookie HttpOnly + SameSite=Strict, API chỉ nhận JSON.
-- Trang lấy số cần mã QR đúng và giới hạn số lượt theo IP (`TICKET_IP_LIMIT`, mặc định 30/giờ). Không thu số điện thoại khách.
+- Trang lấy số giới hạn số lượt theo IP (`TICKET_IP_LIMIT`, mặc định 30/giờ). Không thu số điện thoại khách.
 - Chạy sau Caddy/HTTPS (`TRUST_PROXY=1`).
 
 ## Chưa có (có thể làm tiếp)

@@ -105,60 +105,60 @@
 
   // ---------- 1. Gọi số ----------
   async function viewQueue(main) {
-    let counter = Number(ls.get('counter', '1')) || 1;
     let data = await api('GET', '/api/queue');
-    let key = (await api('GET', '/api/ticket-key')).key;
+    let keyInfo = await api('GET', '/api/ticket-key');
     const box = h('div');
     main.append(box);
     const qrPrint = h('div', { id: 'qrprint' });
     main.append(qrPrint);
 
-    const act = (path, extra) => guard(async () => {
-      const r = await api('POST', path, { counter, ...extra });
+    const post = guard(async (path, body, okMsg) => {
+      const r = await api('POST', path, body);
       if (path.endsWith('/call') && !r.ticket) toast('Không còn khách đang chờ');
-      else if (r.ticket) toast(`Đã gọi số ${pad(r.ticket.number)} - quầy ${counter}`);
+      else if (okMsg) toast(okMsg(r));
       await refresh();
     });
 
     async function refresh() { data = await api('GET', '/api/queue'); draw(); }
 
-    function qrUrl() { return `${location.origin}/lay-so?k=${key}`; }
+    // Liên kết cho khách: gọn (/lay-so); chỉ thêm mã khi bật "chỉ cho lấy số khi quét QR tại quầy".
+    function customerUrl() { return `${location.origin}/lay-so${keyInfo.require ? `?k=${keyInfo.key}` : ''}`; }
     function qrImg() {
       const q = qrcode(0, 'M');
-      q.addData(qrUrl());
+      q.addData(customerUrl());
       q.make();
       return h('img', { src: q.createDataURL(8, 2), alt: 'Mã QR lấy số' });
     }
+    const cts = () => Array.from({ length: data.counters }, (_, i) => i + 1);
 
     function draw() {
-      if (counter > data.counters) counter = 1;
       const serving = new Map(data.tickets.filter((t) => t.status === 'serving').map((t) => [t.counter, t]));
-      const mine = serving.get(counter);
       const waiting = data.tickets.filter((t) => t.status === 'waiting');
       const skipped = data.tickets.filter((t) => t.status === 'skipped');
-      const manual = h('input', { type: 'number', min: '1', placeholder: 'Số cần gọi', style: 'min-width:110px;flex:1', 'aria-label': 'Gọi số cụ thể' });
+      const callTo = (t) => h('div', { class: 'row', style: 'gap:4px' }, cts().map((c) =>
+        h('button', { onclick: () => post('/api/queue/call-number', { counter: c, number: t.number }, () => `Mời số ${pad(t.number)} đến quầy ${c}`) }, `Q${c}`)));
+      const label = (t) => h('span', null, h('b', null, pad(t.number)), t.name ? ` ${t.name}` : '');
 
       box.replaceChildren(
         h('div', { class: 'card' },
-          h('h2', null, 'Bạn đang điều khiển quầy nào?'),
-          h('div', { class: 'counters' }, Array.from({ length: data.counters }, (_, i) => i + 1).map((c) =>
-            h('button', { class: c === counter ? 'on' : '', onclick: () => { counter = c; ls.set('counter', String(c)); draw(); } }, `Quầy ${c}`))),
-          h('div', { class: 'actions' },
-            h('button', { class: 'primary callnext', onclick: act('/api/queue/call') }, `GỌI SỐ TIẾP → QUẦY ${counter}`),
-            h('button', { onclick: act('/api/queue/recall'), disabled: !mine }, 'Gọi lại'),
-            h('button', { onclick: act('/api/queue/skip'), disabled: !mine }, 'Khách vắng (bỏ qua)'),
-            h('button', { onclick: act('/api/queue/done'), disabled: !mine }, 'Hoàn tất'),
-            h('div', { class: 'row', style: 'flex-wrap:nowrap' }, manual,
-              h('button', { onclick: guard(async () => { if (!manual.value) return; await act('/api/queue/call-number', { number: Number(manual.value) })(); }) }, 'Gọi')))),
-
-        h('div', { class: 'card' },
-          h('div', { class: 'now' }, Array.from({ length: data.counters }, (_, i) => i + 1).map((c) => {
+          h('h2', null, 'Gọi khách vào quầy'),
+          h('p', { class: 'muted' }, 'Bấm nút của quầy đang rảnh: số kế tiếp được gọi lên tivi và đọc tên. Khách cũ của quầy đó tự được xoá khỏi màn hình.'),
+          h('div', { class: 'now' }, cts().map((c) => {
             const t = serving.get(c);
-            return h('div', { class: 'c' + (c === counter ? ' me' : '') }, h('div', { class: 'muted' }, `Quầy ${c}`), h('div', { class: 'n' + (t ? '' : ' idle') }, t ? pad(t.number) : '---'));
+            return h('div', { class: 'c' + (t ? ' me' : '') },
+              h('div', { class: 'muted' }, `Quầy ${c}`),
+              h('div', { class: 'n' + (t ? '' : ' idle') }, t ? pad(t.number) : '---'),
+              h('div', { class: 'muted', style: 'min-height:1.4em' }, t ? t.name : ''),
+              h('button', { class: 'primary', style: 'width:100%;margin-top:6px', onclick: () => post('/api/queue/call', { counter: c }, (r) => `Mời số ${pad(r.ticket.number)} đến quầy ${c}`) }, `GỌI SỐ TIẾP → QUẦY ${c}`),
+              h('div', { class: 'row', style: 'margin-top:6px;gap:4px;flex-wrap:nowrap' },
+                h('button', { style: 'flex:1;padding:6px', disabled: !t, onclick: () => post('/api/queue/recall', { counter: c }, () => 'Đã gọi lại') }, 'Gọi lại'),
+                h('button', { style: 'flex:1;padding:6px', disabled: !t, onclick: () => post('/api/queue/skip', { counter: c }, () => 'Đã bỏ qua (khách vắng)') }, 'Vắng'),
+                h('button', { style: 'flex:1;padding:6px', disabled: !t, onclick: () => post('/api/queue/done', { counter: c }, () => 'Đã hoàn tất') }, 'Xong')));
           })),
           h('p', { class: 'stats muted' },
-            h('span', null, `Đã cấp: ${data.stats.issued}`), h('span', null, `Đang chờ: ${data.stats.waiting}`),
-            h('span', null, `Hoàn tất: ${data.stats.done}`), h('span', null, `Bỏ qua: ${data.stats.skipped}`))),
+            h('span', null, `Đã cấp hôm nay: ${data.stats.issued}`), h('span', null, `Đang chờ: ${data.stats.waiting}`),
+            h('span', null, `Hoàn tất: ${data.stats.done}`), h('span', null, `Bỏ qua: ${data.stats.skipped}`),
+            h('span', null, 'Số thứ tự tự bắt đầu lại từ 001 vào ngày mới'))),
 
         h('div', { class: 'card' },
           h('div', { class: 'row' }, h('h2', { class: 'grow', style: 'margin:0' }, `Đang chờ (${waiting.length})`),
@@ -171,26 +171,30 @@
                 await refresh();
               }),
             }, '+ Cấp số cho khách không có điện thoại')),
-          waiting.length ? h('div', { class: 'tickets', style: 'margin-top:10px' }, waiting.map((t) => h('div', { class: 'tk' }, h('b', null, pad(t.number)), t.name && h('span', { class: 'muted' }, t.name),
-            h('button', { onclick: act('/api/queue/call-number', { number: t.number }) }, 'Gọi'))))
+          waiting.length ? h('div', { class: 'tickets', style: 'margin-top:10px' }, waiting.map((t) => h('div', { class: 'tk' }, label(t), callTo(t))))
             : h('p', { class: 'muted' }, 'Chưa có khách chờ.'),
           skipped.length ? h('div', null, h('h3', { style: 'margin-top:14px' }, 'Đã bỏ qua (gọi lại nếu khách quay lại)'),
-            h('div', { class: 'tickets' }, skipped.map((t) => h('div', { class: 'tk skipped' }, h('b', null, pad(t.number)), h('button', { onclick: act('/api/queue/call-number', { number: t.number }) }, 'Gọi lại'))))) : null),
+            h('div', { class: 'tickets' }, skipped.map((t) => h('div', { class: 'tk skipped' }, label(t), callTo(t))))) : null),
 
         h('div', { class: 'card qrbox no-print' },
-          h('h2', null, 'Mã QR cho khách lấy số'),
+          h('h2', null, 'Hai đường dẫn của hệ thống'),
+          h('table', { class: 't', style: 'text-align:left;margin-bottom:12px' },
+            h('tbody', null,
+              h('tr', null, h('th', null, 'Khách lấy số'), h('td', { style: 'word-break:break-all' }, customerUrl())),
+              h('tr', null, h('th', null, 'Nội bộ bảo vệ'), h('td', { style: 'word-break:break-all' }, `${location.origin}/bao-ve`)),
+              h('tr', null, h('th', null, 'Màn hình tivi'), h('td', { style: 'word-break:break-all' }, `${location.origin}/tv`)))),
           qrImg(),
-          h('p', { class: 'muted', style: 'word-break:break-all' }, qrUrl()),
+          h('p', { class: 'muted' }, 'Mã QR dán ở cửa dẫn tới trang lấy số của khách.'),
           h('div', { class: 'row', style: 'justify-content:center' },
             h('button', { onclick: () => { qrPrint.replaceChildren(h('h1', null, 'Quét mã QR để lấy số thứ tự'), qrImg()); document.body.classList.add('print-qr'); window.print(); document.body.classList.remove('print-qr'); } }, 'In mã QR'),
             h('button', { onclick: () => window.open('/tv', '_blank') }, 'Mở màn hình tivi'),
-            h('button', {
+            keyInfo.require ? h('button', {
               class: 'danger',
               onclick: guard(async () => {
                 if (!confirm('Tạo mã QR mới? Mã QR đang dán sẽ hết hiệu lực và phải in/dán lại.')) return;
-                key = (await api('POST', '/api/ticket-key/rotate')).key; draw(); toast('Đã tạo mã QR mới');
+                keyInfo = { ...keyInfo, key: (await api('POST', '/api/ticket-key/rotate')).key }; draw(); toast('Đã tạo mã QR mới');
               }),
-            }, 'Đổi mã QR'))));
+            }, 'Đổi mã QR') : null)));
     }
     draw();
 
@@ -505,10 +509,13 @@
           h('h2', null, 'Thông tin chung'),
           h('div', { class: 'form-grid' },
             field('company', 'Tên công ty bảo vệ (in trên phiếu)'), field('target', 'Mục tiêu bảo vệ'), field('place', 'Địa danh (dòng ngày tháng)'),
-            field('branch_title', 'Tên hiển thị trên tivi / trang lấy số'), field('counters', 'Số quầy giao dịch (1-10)', { type: 'number', min: '1', max: '10' }), field('tv_note', 'Dòng chữ chạy trên tivi')),
+            field('branch_title', 'Tên hiển thị trên tivi / trang lấy số'), field('counters', 'Số quầy giao dịch (1-10)', { type: 'number', min: '1', max: '10' }), field('tv_note', 'Dòng chữ chạy trên tivi'),
+            h('div', null, h('label', null, 'Chống lấy số từ xa'),
+              h('label', { style: 'display:flex;gap:8px;align-items:center;color:var(--text);font-size:1rem;margin:0' },
+                (f.require_key = h('input', { type: 'checkbox', checked: s.require_key === '1', style: 'width:22px;min-height:0;height:22px' })), 'Chỉ cho lấy số khi quét mã QR dán tại quầy'))),
           h('button', {
             class: 'primary', style: 'margin-top:12px',
-            onclick: guard(async () => { await api('PUT', '/api/settings', Object.fromEntries(Object.entries(f).map(([k, el]) => [k, el.value]))); toast('Đã lưu cài đặt'); }),
+            onclick: guard(async () => { await api('PUT', '/api/settings', Object.fromEntries(Object.entries(f).map(([k, el]) => [k, el.type === 'checkbox' ? (el.checked ? '1' : '0') : el.value]))); toast('Đã lưu cài đặt'); }),
           }, 'Lưu')),
 
         h('div', { class: 'card' },

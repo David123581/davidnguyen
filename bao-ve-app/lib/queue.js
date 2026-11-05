@@ -22,12 +22,12 @@ function createQueue(db, onChange) {
 
   function announce(ticket) {
     callSeq += 1;
-    lastCall = { seq: callSeq, number: ticket.number, counter: ticket.counter, day: ticket.day };
+    lastCall = { seq: callSeq, number: ticket.number, counter: ticket.counter, name: ticket.name || '', day: ticket.day };
   }
 
   function publicState() {
     const day = today();
-    const serving = db.prepare("SELECT number, counter FROM tickets WHERE day = ? AND status = 'serving' ORDER BY counter").all(day);
+    const serving = db.prepare("SELECT number, counter, name FROM tickets WHERE day = ? AND status = 'serving' ORDER BY counter").all(day);
     const waiting = db.prepare("SELECT COUNT(*) AS n FROM tickets WHERE day = ? AND status = 'waiting'").get(day).n;
     const next = db.prepare("SELECT number FROM tickets WHERE day = ? AND status = 'waiting' ORDER BY number LIMIT 5").all(day).map((r) => r.number);
     return {

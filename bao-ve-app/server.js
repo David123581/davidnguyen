@@ -32,13 +32,18 @@ function broadcast() {
 const queue = createQueue(db, broadcast);
 setInterval(() => { for (const res of sseClients) res.write(': ping\n\n'); }, 25_000).unref();
 
+// Qua ngày (giờ Việt Nam): đẩy trạng thái trống lên tivi; số thứ tự tự bắt đầu lại từ 001.
+let lastDay = today();
+setInterval(() => { const d = today(); if (d !== lastDay) { lastDay = d; broadcast(); } }, 20_000).unref();
+
 // ---------- Tiện ích HTTP ----------
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon',
   '.webmanifest': 'application/manifest+json',
 };
-const PAGES = { '/': 'index.html', '/lay-so': 'lay-so.html', '/tv': 'tv.html', '/in-danh-gia': 'in-danh-gia.html' };
+// Hai đường dẫn tách biệt: khách (/ hoặc /lay-so) và nội bộ bảo vệ (/bao-ve).
+const PAGES = { '/': 'lay-so.html', '/lay-so': 'lay-so.html', '/bao-ve': 'index.html', '/tv': 'tv.html', '/in-danh-gia': 'in-danh-gia.html' };
 
 const SEC_HEADERS = {
   'X-Content-Type-Options': 'nosniff',
@@ -128,7 +133,7 @@ route('GET', '/api/stream', { auth: false, raw: true }, (ctx) => {
 route('POST', '/api/ticket', { auth: false }, ({ body, ip }) => {
   const existing = queue.byToken(body.token);
   if (existing && existing.status === 'waiting') return { token: existing.token, ...queue.ticketView(existing) };
-  if (!sameKey(body.k || '', getSetting(db, 'ticket_key'))) {
+  if (getSetting(db, 'require_key') === '1' && !sameKey(body.k || '', getSetting(db, 'ticket_key'))) {
     throw new HttpError(403, 'Mã QR không hợp lệ hoặc đã hết hạn. Vui lòng quét lại mã QR tại quầy bảo vệ.');
   }
   limitTickets(ip);
@@ -169,7 +174,7 @@ route('POST', '/api/queue/issue', {}, ({ body }) => {
   const t = queue.issue({ name: body.name, source: 'guard' });
   return { number: t.number };
 });
-route('GET', '/api/ticket-key', {}, () => ({ key: getSetting(db, 'ticket_key') }));
+route('GET', '/api/ticket-key', {}, () => ({ key: getSetting(db, 'ticket_key'), require: getSetting(db, 'require_key') === '1' }));
 route('POST', '/api/ticket-key/rotate', {}, () => {
   const key = crypto.randomBytes(6).toString('hex');
   setSetting(db, 'ticket_key', key);
@@ -177,7 +182,7 @@ route('POST', '/api/ticket-key/rotate', {}, () => {
 });
 
 // --- cài đặt ---
-const SETTING_KEYS = { company: 80, target: 80, place: 60, branch_title: 80, tv_note: 200, counters: 2 };
+const SETTING_KEYS = { company: 80, target: 80, place: 60, branch_title: 80, tv_note: 200, counters: 2, require_key: 1 };
 route('GET', '/api/settings', {}, () => {
   const out = {};
   for (const k of Object.keys(SETTING_KEYS)) out[k] = getSetting(db, k);
@@ -192,6 +197,7 @@ route('PUT', '/api/settings', {}, ({ body }) => {
       if (!Number.isInteger(n) || n < 1 || n > 10) throw new HttpError(400, 'Số quầy phải từ 1 đến 10');
       v = String(n);
     }
+    if (k === 'require_key') v = v === '1' || body[k] === true ? '1' : '0';
     setSetting(db, k, v);
   }
   broadcast();

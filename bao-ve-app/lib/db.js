@@ -120,6 +120,7 @@ const DEFAULT_SETTINGS = {
   place: 'Tân Châu',
   branch_title: 'PGD Tân Châu',
   counters: '3',
+  require_key: '0',
   tv_note: 'Kính chào quý khách. Vui lòng giữ trật tự và chờ đến lượt.',
 };
 

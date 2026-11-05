@@ -17,7 +17,7 @@
   document.getElementById('print').addEventListener('click', () => window.print());
 
   const r = await fetch(`/api/evaluations?month=${encodeURIComponent(month)}`);
-  if (r.status === 401) { location.href = '/'; return; }
+  if (r.status === 401) { location.href = '/bao-ve'; return; }
   const d = await r.json();
   if (!r.ok) { sheets.textContent = d.error || 'Lỗi'; return; }
 

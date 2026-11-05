@@ -32,9 +32,9 @@
     clearInterval(timer);
     view.replaceChildren();
     const p = el('div', 'panel');
-    p.append(el('div', 'label', 'Bấm nút bên dưới để nhận số thứ tự'));
+    p.append(el('div', 'label', 'Nhập tên để nhân viên gọi đúng tên bạn trên loa (không bắt buộc), rồi bấm LẤY SỐ.'));
     const name = el('input');
-    name.placeholder = 'Tên của bạn (không bắt buộc)';
+    name.placeholder = 'Ví dụ: Nguyễn Văn An';
     name.maxLength = 40;
     name.setAttribute('aria-label', 'Tên của bạn');
     const btn = el('button', 'primary take', 'LẤY SỐ');

@@ -6,7 +6,8 @@ header { display: flex; justify-content: space-between; align-items: center; pad
 main { flex: 1; display: grid; grid-template-columns: 1.6fr 1fr; gap: 2vw; padding: 2vh 3vw; min-height: 0; }
 #current { background: #fff; color: #00366b; border-radius: 2vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
 .cap { font-size: 5vh; font-weight: 700; color: #5d6b7a; }
-#num { font-size: 32vh; font-weight: 900; line-height: 1; color: #c8102e; font-variant-numeric: tabular-nums; margin: 1vh 0; }
+#num { font-size: 28vh; font-weight: 900; line-height: 1; color: #c8102e; font-variant-numeric: tabular-nums; margin: 1vh 0; }
+#who { font-size: 6.5vh; font-weight: 800; min-height: 7.5vh; color: #00366b; }
 #to { font-size: 8vh; font-weight: 800; }
 #current.flash { animation: flash 1.2s ease 3; }
 @keyframes flash { 0%, 100% { background: #fff; } 50% { background: #ffe9a8; } }

@@ -52,8 +52,10 @@
     if (speaking) return;
     speaking = true;
     while (speechQueue.length) {
-      const { number, counter } = speechQueue.shift();
-      const text = `Mời khách hàng số ${number}, đến quầy ${counter}`;
+      const { number, counter, name } = speechQueue.shift();
+      const text = name
+        ? `Mời khách hàng ${name}, số ${number}, đến quầy ${counter}`
+        : `Mời khách hàng số ${number}, đến quầy ${counter}`;
       await chime();
       await say(text);
       await new Promise((r) => setTimeout(r, 400));
@@ -76,13 +78,13 @@
     $('waiting').textContent = `Đang chờ: ${s.waiting} khách`;
     const list = $('counters');
     list.replaceChildren();
-    const by = new Map(s.serving.map((x) => [x.counter, x.number]));
+    const by = new Map(s.serving.map((x) => [x.counter, x]));
     for (let c = 1; c <= s.counters; c += 1) {
       const li = document.createElement('li');
       const name = document.createElement('span');
       name.textContent = `Quầy ${c}`;
       const b = document.createElement('b');
-      b.textContent = by.has(c) ? pad(by.get(c)) : '---';
+      b.textContent = by.has(c) ? pad(by.get(c).number) : '---';
       if (!by.has(c)) li.className = 'idle';
       li.append(name, b);
       list.append(li);
@@ -96,9 +98,11 @@
     }
     if (s.last_call) {
       $('num').textContent = pad(s.last_call.number);
+      $('who').textContent = s.last_call.name || '';
       $('cnt').textContent = s.last_call.counter;
     } else {
       $('num').textContent = '---';
+      $('who').textContent = '';
       $('cnt').textContent = '-';
     }
   }

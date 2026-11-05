@@ -45,15 +45,26 @@ test('API quản lý cần đăng nhập, PIN sai bị từ chối', async () =>
   assert.equal((await call('GET', '/api/queue')).status, 200);
 });
 
-test('lấy số cần mã QR đúng; cùng thiết bị không lấy trùng số', async () => {
-  const { data: { key } } = await call('GET', '/api/ticket-key');
+test('lấy số: mặc định link gọn không cần mã; bật chống từ xa thì cần mã QR đúng', async () => {
+  const { data: { key, require } } = await call('GET', '/api/ticket-key');
+  assert.equal(require, false);
+  const open = await call('POST', '/api/ticket', { name: 'Nguyễn Văn An' });
+  assert.equal(open.data.number, 1);
+
+  assert.equal((await call('PUT', '/api/settings', { require_key: '1' })).status, 200);
   assert.equal((await call('POST', '/api/ticket', { k: 'sai' })).status, 403);
-  const a = await call('POST', '/api/ticket', { k: key });
   const b = await call('POST', '/api/ticket', { k: key });
-  assert.equal(a.data.number, 1);
   assert.equal(b.data.number, 2);
-  const again = await call('POST', '/api/ticket', { token: a.data.token });
-  assert.equal(again.data.number, 1);
+  const again = await call('POST', '/api/ticket', { token: open.data.token });
+  assert.equal(again.data.number, 1, 'cùng thiết bị không lấy trùng số');
+  assert.equal((await call('PUT', '/api/settings', { require_key: '0' })).status, 200);
+});
+
+test('hai trang tách biệt: / là trang khách, /bao-ve là trang nội bộ', async () => {
+  const root = await (await fetch(BASE + '/')).text();
+  const internal = await (await fetch(BASE + '/bao-ve')).text();
+  assert.match(root, /lay-so\.js/);
+  assert.match(internal, /app\.js/);
 });
 
 test('gọi số theo thứ tự, gọi lại, bỏ qua, hoàn tất', async () => {
@@ -62,6 +73,7 @@ test('gọi số theo thứ tự, gọi lại, bỏ qua, hoàn tất', async () 
   assert.equal(c1.data.ticket.counter, 2);
   const s1 = (await call('GET', '/api/public/state')).data;
   assert.equal(s1.last_call.number, 1);
+  assert.equal(s1.last_call.name, 'Nguyễn Văn An', 'tên khách được đọc cùng số');
   const seq1 = s1.last_call.seq;
 
   const re = await call('POST', '/api/queue/recall', { counter: 2 });
