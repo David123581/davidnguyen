@@ -37,12 +37,17 @@
     name.placeholder = 'Ví dụ: Nguyễn Văn An';
     name.maxLength = 40;
     name.setAttribute('aria-label', 'Tên của bạn');
+    name.autocomplete = 'name'; // điện thoại gợi ý sẵn tên đã lưu trong trình duyệt
+    name.autocapitalize = 'words';
+    name.enterKeyHint = 'done';
+    try { name.value = localStorage.getItem('ticket-name') || ''; } catch { /* bỏ qua */ }
     const btn = el('button', 'primary take', 'LẤY SỐ');
     const err = el('div', 'status', msg || '');
     err.style.color = 'var(--red)';
     btn.addEventListener('click', async () => {
       btn.disabled = true;
       try {
+        try { localStorage.setItem('ticket-name', name.value.trim()); } catch { /* bỏ qua */ }
         const t = await api('/api/ticket', { k: key, name: name.value, token });
         token = t.token;
         store.set(token);
