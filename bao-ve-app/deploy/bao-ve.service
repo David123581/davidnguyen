@@ -1,0 +1,27 @@
+# /etc/systemd/system/bao-ve.service
+[Unit]
+Description=Bao ve app (so thu tu, lich truc, danh gia)
+After=network.target
+
+[Service]
+Type=simple
+User=baove
+WorkingDirectory=/opt/bao-ve-app
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=3000
+Environment=TRUST_PROXY=1
+Environment=DATA_DIR=/var/lib/bao-ve
+# PIN chỉ dùng lần đầu tạo CSDL. Bỏ dòng này để app tự sinh PIN và in ra: journalctl -u bao-ve
+Environment=ADMIN_PIN=DOI_MA_NAY
+ExecStart=/usr/bin/node --disable-warning=ExperimentalWarning server.js
+Restart=always
+RestartSec=3
+# Hạn chế quyền
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/bao-ve
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

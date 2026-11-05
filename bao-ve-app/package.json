@@ -1,0 +1,14 @@
+{
+  "name": "bao-ve-app",
+  "version": "1.0.0",
+  "description": "Quản lý tổ bảo vệ PGD: số thứ tự + tivi giọng nói, lịch trực, kiểm tra an ninh, phiếu đánh giá tháng, danh bạ cơ quan",
+  "private": true,
+  "license": "UNLICENSED",
+  "engines": { "node": ">=22.5" },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning server.js",
+    "test": "node --disable-warning=ExperimentalWarning --test",
+    "backup": "node --disable-warning=ExperimentalWarning scripts/backup.js",
+    "reset-pin": "node --disable-warning=ExperimentalWarning scripts/reset-pin.js"
+  }
+}

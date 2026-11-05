@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Màn hình gọi số</title>
+<link rel="stylesheet" href="/tv.css">
+</head>
+<body>
+<div id="start" role="dialog" aria-label="Bật âm thanh">
+  <div>
+    <h1>Màn hình gọi số</h1>
+    <p>Bấm nút bên dưới một lần để bật giọng đọc (trình duyệt yêu cầu).</p>
+    <button id="enable">BẬT ÂM THANH VÀ HIỂN THỊ</button>
+    <p id="voiceInfo"></p>
+  </div>
+</div>
+<header>
+  <div id="branch">PGD</div>
+  <div id="clock" aria-hidden="true"></div>
+</header>
+<main>
+  <section id="current" aria-live="polite">
+    <div class="cap">MỜI KHÁCH HÀNG SỐ</div>
+    <div id="num">---</div>
+    <div id="who"></div>
+    <div id="to">ĐẾN QUẦY <span id="cnt">-</span></div>
+  </section>
+  <aside>
+    <h2>CÁC QUẦY</h2>
+    <ul id="counters"></ul>
+    <h2>SỐ KẾ TIẾP</h2>
+    <div id="next"></div>
+    <div id="waiting"></div>
+  </aside>
+</main>
+<footer><div id="ticker"><span id="note"></span></div></footer>
+<script src="/tv.js"></script>
+</body>
+</html>

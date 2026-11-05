@@ -1,0 +1,36 @@
+* { box-sizing: border-box; }
+body { margin: 0; background: #e6e9ee; font-family: "Times New Roman", Times, serif; color: #000; }
+.toolbar { position: sticky; top: 0; background: #00366b; color: #fff; padding: 10px 16px; display: flex; gap: 14px; align-items: center; font-family: system-ui, sans-serif; z-index: 2; }
+.toolbar button { font: inherit; padding: 8px 16px; border-radius: 8px; border: 0; background: #fff; color: #00366b; font-weight: 700; cursor: pointer; }
+.sheet { width: 210mm; margin: 12px auto; background: #fff; padding: 12mm 14mm; font-size: 11.5pt; line-height: 1.25; }
+.head { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; text-align: center; font-weight: 700; }
+.head .l { text-transform: uppercase; }
+.head .r .sub::after { content: ""; display: block; width: 45mm; border-top: 1px dashed #000; margin: 1mm auto 0; }
+h1 { font-size: 14pt; text-align: center; margin: 8mm 0 0; text-transform: uppercase; }
+.month { text-align: center; font-weight: 700; font-size: 13pt; }
+.target { text-align: center; font-style: italic; font-weight: 700; margin: 3mm 0 4mm; }
+h2 { font-size: 12pt; margin: 4mm 0 2mm; text-transform: uppercase; }
+table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+th, td { border: 1px solid #000; padding: 1mm 1.6mm; vertical-align: middle; }
+th { text-align: center; font-weight: 700; }
+td.c { text-align: center; }
+td.m { font-size: 14pt; text-align: center; line-height: 1; }
+td.j { text-align: justify; }
+tr { break-inside: avoid; }
+thead { display: table-header-group; }
+tr.g td { font-weight: 700; }
+.cmt { break-inside: avoid; }
+.cmt h3 { font-size: 11.5pt; text-decoration: underline; margin: 3.5mm 0 1.5mm; text-transform: uppercase; }
+.line { display: flex; gap: 2mm; align-items: baseline; margin-top: 1.6mm; }
+.line b { font-weight: 400; white-space: nowrap; }
+.dots { flex: 1; border-bottom: 1px dotted #000; min-height: 1.5em; padding: 0 1mm; font-style: italic; }
+.dots2 { border-bottom: 1px dotted #000; min-height: 1.4em; margin-top: 1.6mm; }
+.sign { break-inside: avoid; margin-top: 4mm; margin-left: 52%; text-align: center; }
+.sign .sp { height: 24mm; }
+@page { size: A4 portrait; margin: 0; }
+@media print {
+  body { background: #fff; }
+  .toolbar { display: none; }
+  .sheet { margin: 0; width: auto; box-shadow: none; padding: 10mm 14mm; break-after: page; }
+  .sheet:last-child { break-after: auto; }
+}

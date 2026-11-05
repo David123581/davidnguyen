@@ -1,0 +1,8 @@
+# /etc/caddy/Caddyfile  — Caddy tự cấp và gia hạn HTTPS (Let's Encrypt)
+# Thay baove.example.com bằng tên miền đã trỏ về IP của VPS.
+baove.example.com {
+	encode gzip
+	reverse_proxy 127.0.0.1:3000 {
+		flush_interval -1   # cần cho kênh /api/stream (cập nhật tivi theo thời gian thực)
+	}
+}
