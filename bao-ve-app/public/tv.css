@@ -1,0 +1,32 @@
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: #00366b; color: #fff; font-family: system-ui, "Segoe UI", Roboto, Arial, sans-serif; display: flex; flex-direction: column; overflow: hidden; }
+header { display: flex; justify-content: space-between; align-items: center; padding: 1.2vh 3vw; background: #00264d; font-size: 3.2vh; font-weight: 700; letter-spacing: .03em; }
+#clock { font-variant-numeric: tabular-nums; opacity: .9; }
+main { flex: 1; display: grid; grid-template-columns: 1.6fr 1fr; gap: 2vw; padding: 2vh 3vw; min-height: 0; }
+#current { background: #fff; color: #00366b; border-radius: 2vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.cap { font-size: 5vh; font-weight: 700; color: #5d6b7a; }
+#num { font-size: 32vh; font-weight: 900; line-height: 1; color: #c8102e; font-variant-numeric: tabular-nums; margin: 1vh 0; }
+#to { font-size: 8vh; font-weight: 800; }
+#current.flash { animation: flash 1.2s ease 3; }
+@keyframes flash { 0%, 100% { background: #fff; } 50% { background: #ffe9a8; } }
+aside { background: #0a4d8c; border-radius: 2vh; padding: 2vh 2vw; display: flex; flex-direction: column; min-height: 0; }
+h2 { font-size: 3vh; margin: 0 0 1vh; color: #bcd9f3; letter-spacing: .08em; }
+#counters { list-style: none; margin: 0 0 2vh; padding: 0; }
+#counters li { display: flex; justify-content: space-between; align-items: center; font-size: 5.5vh; font-weight: 700; padding: 1vh 0; border-bottom: 1px solid #ffffff33; }
+#counters li b { font-size: 7vh; color: #ffd23f; font-variant-numeric: tabular-nums; min-width: 3ch; text-align: right; }
+#counters li.idle b { color: #ffffff66; }
+#next { display: flex; gap: 1.2vw; flex-wrap: wrap; font-size: 5vh; font-weight: 700; }
+#next span { background: #ffffff22; border-radius: 1vh; padding: .4vh 1.2vw; font-variant-numeric: tabular-nums; }
+#waiting { margin-top: auto; font-size: 3.6vh; color: #bcd9f3; }
+footer { background: #00264d; font-size: 3.4vh; padding: 1.2vh 0; overflow: hidden; white-space: nowrap; }
+#ticker { display: inline-block; padding-left: 100%; animation: tick 28s linear infinite; }
+@keyframes tick { to { transform: translateX(-100%); } }
+#start { position: fixed; inset: 0; background: #00366b; z-index: 10; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; }
+#start h1 { font-size: 6vh; }
+#start p { font-size: 2.6vh; }
+#start button { font-size: 3.4vh; padding: 2vh 4vw; border: 0; border-radius: 1.4vh; background: #ffd23f; color: #00264d; font-weight: 800; cursor: pointer; }
+#start.hidden { display: none; }
+#voiceInfo { color: #ffd23f; }
+@media (max-width: 800px) { main { grid-template-columns: 1fr; } #num { font-size: 22vh; } }
+@media (prefers-reduced-motion: reduce) { #ticker { animation: none; padding-left: 0; } #current.flash { animation: none; } }

@@ -1,0 +1,15 @@
+body { background: var(--blue-dark); min-height: 100vh; }
+main { max-width: 440px; margin: 0 auto; padding: 24px 16px 40px; text-align: center; color: #fff; }
+header h1 { font-size: 1.15rem; font-weight: 600; opacity: .9; margin-bottom: 18px; }
+.panel { background: #fff; color: var(--text); border-radius: 20px; padding: 26px 18px; }
+.big { font-size: 5.5rem; font-weight: 800; line-height: 1; color: var(--blue); letter-spacing: .02em; }
+.label { color: var(--muted); font-size: .95rem; margin: 6px 0; }
+.status { font-size: 1.15rem; font-weight: 600; margin-top: 14px; }
+.panel.called { background: #fff6d6; }
+.panel.called .big { color: var(--red); animation: pulse 1s infinite; }
+.panel.done .big { color: var(--muted); }
+button.take { width: 100%; font-size: 1.4rem; padding: 18px; margin-top: 14px; border-radius: 14px; }
+.panel input { text-align: center; }
+.note { margin-top: 16px; font-size: .9rem; opacity: .85; }
+@keyframes pulse { 50% { transform: scale(1.06); } }
+@media (prefers-reduced-motion: reduce) { .panel.called .big { animation: none; } }
